@@ -278,12 +278,19 @@ class Parser {
         ];
         Map<String, Border> borderElements = {};
         for (var elementName in borderElementNamesList) {
+          // XmlElement? element;
+          // try {
+          //   element = node.findElements(elementName).single;
+          // } on StateError catch (_) {
+          //   // Either there is no element, or there are too many ones.
+          //   // Silently ignore this element.
+          // }
+          final elements = node.findElements(elementName).toList();
           XmlElement? element;
-          try {
-            element = node.findElements(elementName).single;
-          } on StateError catch (_) {
-            // Either there is no element, or there are too many ones.
-            // Silently ignore this element.
+          if (elements.length == 1) {
+            element = elements.first;
+          } else {
+            element = null;
           }
 
           final borderStyleAttribute = element?.getAttribute('style')?.trim();
@@ -293,7 +300,14 @@ class Parser {
 
           String? borderColorHex;
           try {
-            final color = element?.findElements('color').single;
+            // final color = element?.findElements('color').single;
+            final Iterable<XmlElement> colorElements = element?.findElements('color') ?? const [];
+            XmlElement? color;
+            if (colorElements.length == 1) {
+              color = colorElements.first;
+            } else {
+              color = null; // gracefully ignore if missing or ambiguous
+            }
             borderColorHex = color?.getAttribute('rgb')?.trim();
           } on StateError catch (_) {}
 
